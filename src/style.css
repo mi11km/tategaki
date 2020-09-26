@@ -42,3 +42,23 @@ body {
         opacity: 0;
     }
 }
+
+.water {
+    position: absolute;
+    border-radius: 50%;
+    height: 120px;
+    width: 120px;
+    animation: drop 2s forwards linear;
+}
+
+@keyframes drop {
+    from {
+        opacity: 0.7;
+        box-shadow: 0 0 4px steelblue;
+    }
+    to {
+        opacity: 0;
+        transform: scale(2);
+        box-shadow: 0 0 80px steelblue;
+    }
+}
