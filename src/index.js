@@ -1,13 +1,31 @@
 /* 任意設定する変数 */
 const bookTypesNum = 100; /* todo 取ってくる本の幅: 1以上101未満の数字 */
-const appearanceRate = 1000;
 const animationTime = 8000; // cssのanimationTimeと一致させる！（こっちはms）
+const fetchWeatherInfoInterval = 3600000; // 1時間おき
 
-getWeatherInfo().then((res) => {
-  console.log(res);
-});
+let interval;
 
-setInterval(createSentence, appearanceRate);
+setSentenceByWeatherInfo();
+setInterval(setSentenceByWeatherInfo, fetchWeatherInfoInterval);
+
+/**/
+
+function setSentenceByWeatherInfo() {
+  if (interval) {
+    clearInterval(interval);
+  }
+  getWeatherInfo().then((res) => {
+    let appearanceRate = 2000;
+    if ("rain" in res.current) {
+      appearanceRate *= res.current.rain["1h"];
+      console.log(appearanceRate);
+      interval = setInterval(createSentence, appearanceRate);
+    }
+    interval = setInterval(createSentence, appearanceRate);
+  });
+}
+
+/**/
 
 async function getSentence() {
   const id = Math.round(Math.random() * bookTypesNum) + 3;
@@ -21,15 +39,13 @@ async function getSentence() {
 }
 
 function createSentenceElement(sentence) {
-  let left = Math.random() * 98;
-  const leftDiv = (left - 2.0).toFixed(2) + "%";
-  left = left.toFixed(2) + "%";
+  const left = (Math.random() * 98).toFixed(2) + "%";
   const top = (Math.random() * 60).toFixed(2) + "%";
 
   let div = document.createElement("div");
   div.setAttribute("class", "water");
   document.body.appendChild(div);
-  div.style.left = leftDiv;
+  div.style.left = left;
   div.style.top = top;
 
   let h2 = document.createElement("h2");
@@ -46,53 +62,48 @@ function createSentenceElement(sentence) {
 }
 
 function createSentence() {
-  getSentence()
-    .then((res) => {
-      let sentence = res.book.書き出し + "――" + res.book.姓名;
-      createSentenceElement(sentence);
-    })
-    .catch((err) => {
-      console.log(err);
-      return;
-    });
+  getSentence().then((res) => {
+    let sentence = res.book.書き出し + "――" + res.book.姓名;
+    createSentenceElement(sentence);
+  });
 }
 
 /**/
 
-const getPresentLocation = new Promise((resolve) => {
-  let position = {};
+function getPresentLocation() {
+  return new Promise((resolve) => {
+    let position = {};
 
-  function success(pos) {
-    position.lat = pos.coords.latitude;
-    position.lon = pos.coords.longitude;
-    resolve(position);
-  }
+    function success(pos) {
+      position.lat = pos.coords.latitude;
+      position.lon = pos.coords.longitude;
+      resolve(position);
+    }
 
-  function fail(error) {
-    alert("位置情報の取得に失敗しました。エラーコード：" + error.code);
-  }
+    function fail(error) {
+      alert("位置情報の取得に失敗しました。エラーコード：" + error.code);
+    }
 
-  navigator.geolocation.getCurrentPosition(success, fail);
-});
-
-async function getWeatherInfo() {
-  const apiKey = "e746bc30f40c60f304a46eb058138b94"; /* todo 隠蔽すべき */
-  const baseURL = "https://api.openweathermap.org/data/2.5/onecall?";
-
-  // getPresentLocation.then((position) => {
-  //   console.log(position.lat);
-  // });
-
-  const query = new URLSearchParams({
-    // 東京駅　todo 現在位置にする
-    lat: 35.681236,
-    lon: 139.767125,
-    lang: "ja",
-    appid: apiKey,
+    navigator.geolocation.getCurrentPosition(success, fail);
   });
-  const url = baseURL + query.toString();
+}
 
-  const res = await fetch(url);
-  const json = await res.json();
-  return json;
+function getWeatherInfo() {
+  return new Promise((resolve) => {
+    const apiKey = "e746bc30f40c60f304a46eb058138b94"; /* todo 隠蔽すべき */
+    const baseURL = "https://api.openweathermap.org/data/2.5/onecall?";
+
+    getPresentLocation().then(async (position) => {
+      const query = new URLSearchParams({
+        lat: position.lat,
+        lon: position.lon,
+        lang: "ja",
+        appid: apiKey,
+      });
+      const url = baseURL + query.toString();
+      const res = await fetch(url);
+      const json = await res.json();
+      resolve(json);
+    });
+  });
 }
