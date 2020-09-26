@@ -1,6 +1,29 @@
 async function getWeatherInfo() {
-  // todo 気象情報をとってくる。気象情報に応じて文章の出現頻度などを変える？
+  const apiKey = "e746bc30f40c60f304a46eb058138b94"; /* todo 隠蔽すべき */
+  const baseURL = "https://api.openweathermap.org/data/2.5/onecall?";
+
+  const query = new URLSearchParams({
+    // 東京駅
+    lat: 35.681236,
+    lon: 139.767125,
+    lang: "ja",
+    appid: apiKey,
+  });
+  const url = baseURL + query.toString()
+
+  // const res = await fetch("https://api.openweathermap.org/data/2.5/onecall?lat=35.681236&lon=139.767125&lang=ja&exclude=hourly,daily&appid=e746bc30f40c60f304a46eb058138b94");
+  const res = await fetch(url)
+  const json = await res.json();
+  return json;
 }
+
+getWeatherInfo().then(res => {
+  console.log(res);
+}).catch(err => {
+  console.log(err);
+})
+
+/**/
 
 async function getSentence() {
   const id = Math.round(Math.random() * bookTypesNum) + 3;
