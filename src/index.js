@@ -1,6 +1,6 @@
 /* 任意設定する変数 */
 const bookTypesNum = 500; /* todo 取ってくる本の幅: 1以上101未満の数字 */
-const animationTime = 8000; // cssのanimationTimeと一致させる！（こっちはms）
+const animationTime = 15000; // cssのanimationTimeと一致させる！（こっちはms）
 const fetchWeatherInfoInterval = 3600000; // 1時間おき
 
 let interval;
@@ -17,7 +17,7 @@ function setSentenceByWeatherInfo() {
     clearInterval(interval);
   }
   getWeatherInfo().then((res) => {
-    let appearanceRate = 6000;
+    let appearanceRate = 4000;
     if ("rain" in res.current) {
       if (res.current.rain["1h"] > 20) {
         appearanceRate *= 1 - res.current.rain["1h"] / maxRainfall;
@@ -47,7 +47,7 @@ async function getSentence() {
 
 function isOverlapSentence(left) {
   for (let i = 0; i < positionLeft.length; i++) {
-    if (positionLeft[i] - 5.0 < left && left < positionLeft[i] + 5.0) {
+    if (positionLeft[i] - 8.0 < left && left < positionLeft[i] + 8.0) {
       return true;
     }
   }
