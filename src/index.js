@@ -1,11 +1,12 @@
 /* 任意設定する変数 */
 const bookTypesNum = 500; /* todo 取ってくる本の幅: 1以上101未満の数字 */
-const animationTime = 15000; // cssのanimationTimeと一致させる！（こっちはms）
+const animationTime = 15000; // cssのanimationTimeと一致させる！
 const fetchWeatherInfoInterval = 3600000; // 1時間おき
-
-let interval;
 const maxRainfall = 88.7;
-const positionLeft = [];
+
+/* いじらない */
+let interval;
+const leftPositions = [];
 
 setSentenceByWeatherInfo();
 setInterval(setSentenceByWeatherInfo, fetchWeatherInfoInterval);
@@ -37,7 +38,11 @@ async function getSentence() {
   let res = await fetch(`https://api.bungomail.com/v0/books/${id}`);
   let json = await res.json();
 
-  while (!("書き出し" in json.book) && !("作品名" in json.book)) {
+  while (
+    !("書き出し" in json.book) &&
+    !("作品名" in json.book) &&
+    json.book["書き出し"] !== ""
+  ) {
     id = Math.round(Math.random() * bookTypesNum) + 3;
     res = await fetch(`https://api.bungomail.com/v0/books/${id}`);
     json = await res.json();
@@ -46,8 +51,8 @@ async function getSentence() {
 }
 
 function isOverlapSentence(left) {
-  for (let i = 0; i < positionLeft.length; i++) {
-    if (positionLeft[i] - 8.0 < left && left < positionLeft[i] + 8.0) {
+  for (let i = 0; i < leftPositions.length; i++) {
+    if (leftPositions[i] - 8.0 < left && left < leftPositions[i] + 8.0) {
       return true;
     }
   }
@@ -56,15 +61,14 @@ function isOverlapSentence(left) {
 
 function createSentenceElement(sentence) {
   const top = (Math.random() * 60).toFixed(2) + "%";
-  let left = Math.random() * 98;
+  let left = Math.random() * 95;
 
-  if (positionLeft) {
+  if (leftPositions) {
     while (isOverlapSentence(left)) {
-      left = Math.random() * 98;
+      left = Math.random() * 95;
     }
   }
-  positionLeft.push(left);
-  console.log(positionLeft)
+  leftPositions.push(left);
 
   let div = document.createElement("div");
   div.setAttribute("class", "water");
@@ -82,14 +86,13 @@ function createSentenceElement(sentence) {
   setTimeout(function () {
     document.body.removeChild(div);
     document.body.removeChild(h2);
-    positionLeft.splice(positionLeft.indexOf(left), 1);
+    leftPositions.splice(leftPositions.indexOf(left), 1);
   }, animationTime);
 }
 
 function createSentence() {
   getSentence().then((res) => {
-    let sentence = res.book.書き出し + "\n" + "――" + res.book.作品名;
-    sentence.replace(/\r?\n/g, "<br>");
+    let sentence = res.book["書き出し"] + "――" + res.book["作品名"];
     createSentenceElement(sentence);
   });
 }

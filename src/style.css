@@ -1,5 +1,5 @@
 :root {
-    --animationTime: 15s;
+    --animationTime: 15000ms;
     background-color: rgb(0, 0, 0);
 }
 
